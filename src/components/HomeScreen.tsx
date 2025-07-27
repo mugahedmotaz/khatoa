@@ -48,7 +48,7 @@ const HomeScreen = ({ user, dailyProgress, onHabitToggle, onNavigate }: HomeScre
     <div className="mobile-container bg-background min-h-screen">
       {/* الهيدر */}
       <div className="gradient-primary text-white p-6 rounded-b-3xl">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-12">
           <Button
             variant="ghost"
             size="icon"
@@ -137,7 +137,7 @@ const HomeScreen = ({ user, dailyProgress, onHabitToggle, onNavigate }: HomeScre
       </div>
 
       {/* المحتوى الرئيسي */}
-      <div className="p-6 space-y-6 -mt-6">
+      <div className="p-6 space-y-6 mt-12">
         {/* الاقتباس اليومي */}
         <Card className="shadow-card border-motivation/20 bg-motivation-light/50">
           <CardContent className="p-4 text-center">
