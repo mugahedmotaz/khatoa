@@ -247,7 +247,7 @@ const SettingsScreen = ({ user, onBack, onUpdateUser, onResetApp }: SettingsScre
           <CardContent className="p-4 text-center text-sm text-foreground/70">
             <div className="mb-2">🌱 مُجاهدة - كل يوم خطوة</div>
             <div>تطبيق تطوير العادات الإيجابية</div>
-            <div>&copy; j</div>
+            <div>&copy; Development By Mugahed Motaz 2025</div>
           </CardContent>
         </Card>
       </div>
