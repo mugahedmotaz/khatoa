@@ -91,7 +91,7 @@ const SettingsScreen = ({ user, onBack, onUpdateUser, onResetApp }: SettingsScre
         </div>
       </div>
 
-      <div className="p-6 space-y-6 -mt-6">
+      <div className="p-6 space-y-6 mt-12">
         {/* معلومات المستخدم */}
         <Card className="shadow-card">
           <CardHeader>
