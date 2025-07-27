@@ -15,21 +15,42 @@ interface JournalScreenProps {
 const JournalScreen = ({ onBack, onSaveEntry, currentEntry = '' }: JournalScreenProps) => {
   const [entry, setEntry] = useState(currentEntry);
   
+  // حالات المذكرات المحفوظة
+  const [savedEntries, setSavedEntries] = useState<Array<{id: string, content: string, date: string}>>([]);
+  const [showSavedEntries, setShowSavedEntries] = useState(false);
+  
   // حالات الملاحظات المحمية
   const [privateNote, setPrivateNote] = useState('');
+  const [savedPrivateNotes, setSavedPrivateNotes] = useState<Array<{id: string, content: string, date: string}>>([]);
   const [showPrivateModal, setShowPrivateModal] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
   const [isPasswordSet, setIsPasswordSet] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isSettingPassword, setIsSettingPassword] = useState(false);
+  const [showPrivateNotesList, setShowPrivateNotesList] = useState(false);
 
   const handleSave = () => {
     if (entry.trim()) {
+      // حفظ في القائمة المحلية
+      const newEntry = {
+        id: Date.now().toString(),
+        content: entry.trim(),
+        date: new Date().toLocaleDateString('ar-SA')
+      };
+      const updatedEntries = [newEntry, ...savedEntries];
+      setSavedEntries(updatedEntries);
+      localStorage.setItem('journal_entries', JSON.stringify(updatedEntries));
+      
+      // حفظ في النظام الأساسي
       onSaveEntry(entry.trim());
+      
+      // مسح منطقة الإدخال
+      setEntry('');
+      
       toast({
         title: "تم الحفظ! 💜",
-        description: "تم حفظ مشاعرك في مفكرتك اليومية",
+        description: "تم حفظ مذكرتك في قائمة المذكرات",
       });
     }
   };
@@ -37,20 +58,64 @@ const JournalScreen = ({ onBack, onSaveEntry, currentEntry = '' }: JournalScreen
   // تحميل البيانات المحفوظة
   useEffect(() => {
     const loadSavedData = () => {
+      // تحميل المذكرات العادية
+      const savedJournalEntries = localStorage.getItem('journal_entries');
+      if (savedJournalEntries) {
+        setSavedEntries(JSON.parse(savedJournalEntries));
+      }
+      
+      // تحميل بيانات الملاحظات الخاصة
       const savedPassword = localStorage.getItem('private_note_password');
-      const savedNote = localStorage.getItem('private_note_content');
+      const savedPrivateNotesData = localStorage.getItem('private_notes_list');
       setIsPasswordSet(!!savedPassword);
-      if (savedNote) setPrivateNote(savedNote);
+      if (savedPrivateNotesData) {
+        setSavedPrivateNotes(JSON.parse(savedPrivateNotesData));
+      }
     };
     loadSavedData();
   }, []);
 
   // حفظ الملاحظة الخاصة
   const handleSavePrivateNote = () => {
-    localStorage.setItem('private_note_content', privateNote);
+    if (privateNote.trim()) {
+      const newPrivateNote = {
+        id: Date.now().toString(),
+        content: privateNote.trim(),
+        date: new Date().toLocaleDateString('ar-SA')
+      };
+      const updatedPrivateNotes = [newPrivateNote, ...savedPrivateNotes];
+      setSavedPrivateNotes(updatedPrivateNotes);
+      localStorage.setItem('private_notes_list', JSON.stringify(updatedPrivateNotes));
+      
+      // مسح منطقة الإدخال
+      setPrivateNote('');
+      
+      toast({
+        title: "تم الحفظ! 🔒",
+        description: "تم حفظ ملاحظتك الخاصة في القائمة الآمنة",
+      });
+    }
+  };
+  
+  // حذف مذكرة عادية
+  const deleteEntry = (id: string) => {
+    const updatedEntries = savedEntries.filter(entry => entry.id !== id);
+    setSavedEntries(updatedEntries);
+    localStorage.setItem('journal_entries', JSON.stringify(updatedEntries));
     toast({
-      title: "تم الحفظ! 🔒",
-      description: "تم حفظ ملاحظتك الخاصة بأمان",
+      title: "تم الحذف",
+      description: "تم حذف المذكرة",
+    });
+  };
+  
+  // حذف ملاحظة خاصة
+  const deletePrivateNote = (id: string) => {
+    const updatedPrivateNotes = savedPrivateNotes.filter(note => note.id !== id);
+    setSavedPrivateNotes(updatedPrivateNotes);
+    localStorage.setItem('private_notes_list', JSON.stringify(updatedPrivateNotes));
+    toast({
+      title: "تم الحذف",
+      description: "تم حذف الملاحظة الخاصة",
     });
   };
 
@@ -94,6 +159,7 @@ const JournalScreen = ({ onBack, onSaveEntry, currentEntry = '' }: JournalScreen
     setIsAuthenticated(false);
     setPasswordInput('');
     setIsSettingPassword(!isPasswordSet);
+    setShowPrivateNotesList(false);
   };
 
   // إغلاق النافذة
@@ -102,6 +168,7 @@ const JournalScreen = ({ onBack, onSaveEntry, currentEntry = '' }: JournalScreen
     setPasswordInput('');
     setIsAuthenticated(false);
     setIsSettingPassword(false);
+    setShowPrivateNotesList(false);
   };
 
   const prompts = [
@@ -184,6 +251,14 @@ const JournalScreen = ({ onBack, onSaveEntry, currentEntry = '' }: JournalScreen
           </Button>
           
           <Button
+            onClick={() => setShowSavedEntries(!showSavedEntries)}
+            className="w-full h-12 bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:from-blue-600 hover:to-cyan-600"
+          >
+            <Heart className="w-4 h-4 ml-2" />
+            مذكراتي المحفوظة ({savedEntries.length})
+          </Button>
+          
+          <Button
             onClick={openPrivateNotes}
             className="w-full h-12 bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
           >
@@ -199,6 +274,48 @@ const JournalScreen = ({ onBack, onSaveEntry, currentEntry = '' }: JournalScreen
             العودة للرئيسية
           </Button>
         </div>
+        
+        {/* قائمة المذكرات المحفوظة */}
+        {showSavedEntries && (
+          <Card className="shadow-card mt-6">
+            <CardHeader>
+              <CardTitle className="flex items-center text-lg">
+                <Heart className="w-5 h-5 ml-2 text-blue-500" />
+                مذكراتي المحفوظة ({savedEntries.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {savedEntries.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <div className="text-4xl mb-2">📝</div>
+                  <p>لا توجد مذكرات محفوظة بعد</p>
+                  <p className="text-sm">ابدأ بكتابة مذكرتك الأولى!</p>
+                </div>
+              ) : (
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {savedEntries.map((entry) => (
+                    <div key={entry.id} className="bg-gray-50 rounded-lg p-4 border-r-4 border-blue-400">
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="text-sm text-gray-500">{entry.date}</span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteEntry(entry.id)}
+                          className="text-red-500 hover:text-red-700 h-6 w-6 p-0"
+                        >
+                          ×
+                        </Button>
+                      </div>
+                      <p className="text-right leading-relaxed" style={{ direction: 'rtl' }}>
+                        {entry.content}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* نافذة الملاحظات الخاصة */}
@@ -271,36 +388,98 @@ const JournalScreen = ({ onBack, onSaveEntry, currentEntry = '' }: JournalScreen
                   <p className="text-gray-600 text-sm mt-2">مساحة آمنة لأفكارك الشخصية</p>
                 </div>
                 
-                <div className="space-y-4">
-                  <Textarea
-                    placeholder="اكتب ملاحظاتك الخاصة هنا... هذه المساحة محمية وآمنة تماماً"
-                    value={privateNote}
-                    onChange={(e) => setPrivateNote(e.target.value)}
-                    className="min-h-40 text-right resize-none border-2 border-purple-200 focus:border-purple-400"
-                    style={{ direction: 'rtl' }}
-                  />
-                  
-                  <div className="text-sm text-gray-500 text-right">
-                    {privateNote.length} حرف • آخر تحديث: {new Date().toLocaleDateString('ar-SA')}
+                {/* أزرار التبديل */}
+                <div className="flex gap-2 mb-4">
+                  <Button
+                    onClick={() => setShowPrivateNotesList(false)}
+                    variant={!showPrivateNotesList ? "default" : "outline"}
+                    className="flex-1"
+                  >
+                    كتابة جديدة
+                  </Button>
+                  <Button
+                    onClick={() => setShowPrivateNotesList(true)}
+                    variant={showPrivateNotesList ? "default" : "outline"}
+                    className="flex-1"
+                  >
+                    الملاحظات المحفوظة ({savedPrivateNotes.length})
+                  </Button>
+                </div>
+                
+                {!showPrivateNotesList ? (
+                  /* منطقة الكتابة */
+                  <div className="space-y-4">
+                    <Textarea
+                      placeholder="اكتب ملاحظتك الخاصة الجديدة هنا... هذه المساحة محمية وآمنة تماماً"
+                      value={privateNote}
+                      onChange={(e) => setPrivateNote(e.target.value)}
+                      className="min-h-40 text-right resize-none border-2 border-purple-200 focus:border-purple-400"
+                      style={{ direction: 'rtl' }}
+                    />
+                    
+                    <div className="text-sm text-gray-500 text-right">
+                      {privateNote.length} حرف • {new Date().toLocaleDateString('ar-SA')}
+                    </div>
+                    
+                    <div className="flex gap-3">
+                      <Button
+                        onClick={handleSavePrivateNote}
+                        disabled={!privateNote.trim()}
+                        className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 disabled:opacity-50"
+                      >
+                        <Save className="w-4 h-4 ml-2" />
+                        حفظ الملاحظة
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={closeModal}
+                        className="flex-1"
+                      >
+                        إغلاق
+                      </Button>
+                    </div>
                   </div>
-                  
-                  <div className="flex gap-3">
-                    <Button
-                      onClick={handleSavePrivateNote}
-                      className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
-                    >
-                      <Save className="w-4 h-4 ml-2" />
-                      حفظ الملاحظة
-                    </Button>
+                ) : (
+                  /* قائمة الملاحظات المحفوظة */
+                  <div className="space-y-4">
+                    {savedPrivateNotes.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        <div className="text-4xl mb-2">🔒</div>
+                        <p>لا توجد ملاحظات خاصة محفوظة بعد</p>
+                        <p className="text-sm">ابدأ بكتابة ملاحظتك الأولى!</p>
+                      </div>
+                    ) : (
+                      <div className="max-h-80 overflow-y-auto space-y-3">
+                        {savedPrivateNotes.map((note) => (
+                          <div key={note.id} className="bg-purple-50 rounded-lg p-4 border-r-4 border-purple-400">
+                            <div className="flex justify-between items-start mb-2">
+                              <span className="text-sm text-gray-500">{note.date}</span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => deletePrivateNote(note.id)}
+                                className="text-red-500 hover:text-red-700 h-6 w-6 p-0"
+                              >
+                                ×
+                              </Button>
+                            </div>
+                            <p className="text-right leading-relaxed" style={{ direction: 'rtl' }}>
+                              {note.content}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
                     <Button
                       variant="outline"
                       onClick={closeModal}
-                      className="flex-1"
+                      className="w-full"
                     >
                       إغلاق
                     </Button>
                   </div>
-                </div>
+                )}
               </div>
             )}
           </div>
