@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import logoImage from '@/assets/mujahidah-logo.png';
+import logoImage from '@/assets/logo.svg';
 
 interface SplashScreenProps {
   onComplete: () => void;
@@ -19,9 +19,9 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
       <div className="text-center text-white space-y-8 p-8">
         <div className="mb-8">
         </div>
-        
+        <img src= {logoImage} alt="" />
         <div className="space-y-4">
-          <h1 className="text-4xl font-bold">مُجاهدة</h1>
+          <h1 className="text-4xl font-bold">خخ</h1>
           <p className="text-xl opacity-90">كل يوم خطوة... كل يوم مجاهدة</p>
         </div>
         

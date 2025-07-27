@@ -129,7 +129,7 @@ const SettingsScreen = ({ user, onBack, onUpdateUser, onResetApp }: SettingsScre
                     <div>
                       <div className="font-medium text-lg">{user.name}</div>
                       <div className="text-sm text-foreground/70">
-                        {daysSinceStart} يوم من المجاهدة
+                        {daysSinceStart} ايام الاستمرارية
                       </div>
                     </div>
                     <Button
