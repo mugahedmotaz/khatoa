@@ -94,7 +94,7 @@ const StatisticsScreen = ({ user, dailyProgress, onBack }: StatisticsScreenProps
         </div>
       </div>
 
-      <div className="p-6 space-y-6 -mt-6">
+      <div className="p-6 space-y-6 mt-12">
         {/* الإحصائيات الرئيسية */}
         <div className="grid grid-cols-2 gap-4">
           <Card className="shadow-card text-center">

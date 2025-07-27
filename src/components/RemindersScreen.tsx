@@ -123,7 +123,7 @@ const RemindersScreen = ({ user, onBack, onUpdateReminders }: RemindersScreenPro
         </div>
       </div>
 
-      <div className="p-6 space-y-6 -mt-6">
+      <div className="p-6 space-y-6 mt-12">
         {/* تفعيل التذكيرات */}
         <Card className="shadow-card">
           <CardHeader>

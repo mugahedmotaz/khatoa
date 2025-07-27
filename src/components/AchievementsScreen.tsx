@@ -44,7 +44,7 @@ const AchievementsScreen = ({ user, dailyProgress, onBack }: AchievementsScreenP
 
   const currentLevel = getLevelInfo(user.totalPoints);
   const nextLevel = getLevelInfo(user.totalPoints + 1);
-  const progressToNext = nextLevel ? 
+  const progressToNext = nextLevel ?
     ((user.totalPoints - currentLevel.minPoints) / (nextLevel.minPoints - currentLevel.minPoints)) * 100 : 100;
 
   return (
@@ -62,14 +62,14 @@ const AchievementsScreen = ({ user, dailyProgress, onBack }: AchievementsScreenP
           </Button>
           <h1 className="text-2xl font-bold">الإنجازات والمكافآت</h1>
         </div>
-        
+
         <div className="text-center">
           <div className="text-4xl mb-2">🏆</div>
           <p className="opacity-90">احتفل بإنجازاتك ومسيرتك</p>
         </div>
       </div>
 
-      <div className="p-6 space-y-6 -mt-6">
+      <div className="p-6 space-y-6 mt-12">
         {/* مستوى المستخدم الحالي */}
         <Card className="shadow-card border-motivation/20">
           <CardHeader className="text-center">
@@ -110,7 +110,7 @@ const AchievementsScreen = ({ user, dailyProgress, onBack }: AchievementsScreenP
               <div className="text-xs text-foreground/70">إنجاز مفتوح</div>
             </CardContent>
           </Card>
-          
+
           <Card className="shadow-card text-center">
             <CardContent className="p-4">
               <Target className="w-6 h-6 text-success mx-auto mb-1" />
@@ -118,7 +118,7 @@ const AchievementsScreen = ({ user, dailyProgress, onBack }: AchievementsScreenP
               <div className="text-xs text-foreground/70">يوم متتالي</div>
             </CardContent>
           </Card>
-          
+
           <Card className="shadow-card text-center">
             <CardContent className="p-4">
               <Star className="w-6 h-6 text-primary mx-auto mb-1" />
@@ -141,18 +141,18 @@ const AchievementsScreen = ({ user, dailyProgress, onBack }: AchievementsScreenP
               <h3 className="font-bold text-lg">{weeklyChallenge.name}</h3>
               <p className="text-foreground/70">{weeklyChallenge.description}</p>
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>التقدم</span>
                 <span>{weeklyChallenge.currentValue}/{weeklyChallenge.targetValue}</span>
               </div>
-              <Progress 
-                value={(weeklyChallenge.currentValue / weeklyChallenge.targetValue) * 100} 
+              <Progress
+                value={(weeklyChallenge.currentValue / weeklyChallenge.targetValue) * 100}
                 className="h-3"
               />
             </div>
-            
+
             <div className="p-3 bg-success-light/30 rounded-lg">
               <div className="text-sm font-medium text-success-foreground">
                 🎁 المكافأة: {weeklyChallenge.reward}
@@ -174,23 +174,22 @@ const AchievementsScreen = ({ user, dailyProgress, onBack }: AchievementsScreenP
               const progress = calculateProgress(achievement);
               const isUnlocked = progress >= achievement.requirement;
               const progressPercentage = (progress / achievement.requirement) * 100;
-              
+
               return (
                 <motion.div
                   key={achievement.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={`p-4 rounded-lg border transition-all ${
-                    isUnlocked 
-                      ? 'bg-success-light/30 border-success/30' 
+                  className={`p-4 rounded-lg border transition-all ${isUnlocked
+                      ? 'bg-success-light/30 border-success/30'
                       : 'bg-secondary/30 border-border'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center space-x-3 space-x-reverse">
                     <div className={`text-3xl ${isUnlocked ? 'grayscale-0' : 'grayscale'}`}>
                       {achievement.icon}
                     </div>
-                    
+
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
                         <h3 className="font-bold">{achievement.name}</h3>
@@ -203,7 +202,7 @@ const AchievementsScreen = ({ user, dailyProgress, onBack }: AchievementsScreenP
                       <p className="text-sm text-foreground/70 mb-2">
                         {achievement.description}
                       </p>
-                      
+
                       {!isUnlocked && (
                         <div className="space-y-1">
                           <div className="flex justify-between text-xs">

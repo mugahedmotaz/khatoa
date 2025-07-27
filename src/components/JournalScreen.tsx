@@ -54,7 +54,7 @@ const JournalScreen = ({ onBack, onSaveEntry, currentEntry = '' }: JournalScreen
         </div>
       </div>
 
-      <div className="p-6 space-y-6 -mt-6">
+      <div className="p-6 space-y-6 mt-12">
         {/* أسئلة للإلهام */}
         <Card className="shadow-card border-motivation/20">
           <CardHeader>
