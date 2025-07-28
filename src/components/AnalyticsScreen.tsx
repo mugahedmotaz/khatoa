@@ -180,26 +180,6 @@ const AnalyticsScreen = ({ onBack, user, dailyProgress = [] }: AnalyticsScreenPr
       />
     );
   }
-            <PremiumFeatureCard
-              title="إحصائيات شاملة"
-              description="تتبع معدل إنجازك ونسب النجاح لكل عادة"
-              icon={BarChart3}
-            />
-            <PremiumFeatureCard
-              title="تحليل الاتجاهات"
-              description="اكتشف أفضل أوقاتك وأيامك الأكثر إنتاجية"
-              icon={TrendingUp}
-            />
-            <PremiumFeatureCard
-              title="تقارير مفصلة"
-              description="تقارير أسبوعية وشهرية لتقدمك"
-              icon={PieChart}
-            />
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   if (loading || !analyticsData) {
     return (

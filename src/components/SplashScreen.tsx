@@ -106,7 +106,21 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
           <h1 className="text-5xl font-bold mb-2 bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent">
             خطوة
           </h1>
-          <div className="w-16 h-1 bg-gradient-to-r from-purple-400 to-blue-400 mx-auto rounded-full mb-8"></div>
+          <div className="w-16 h-1 bg-gradient-to-r from-purple-400 to-blue-400 mx-auto rounded-full mb-4"></div>
+          
+          {/* شارة الاشتراك */}
+          {subscriptionStatus.isPaid && (
+            <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 mb-4">
+              <Crown className="w-3 h-3 ml-1" />
+              عضو مميز
+            </Badge>
+          )}
+          {subscriptionStatus.isTrialActive && (
+            <Badge className="bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0 mb-4">
+              <Zap className="w-3 h-3 ml-1" />
+              تجربة مجانية - باقي {subscriptionStatus.daysLeft} يوم
+            </Badge>
+          )}
         </div>
 
         {/* الاقتباسات المتحركة */}
