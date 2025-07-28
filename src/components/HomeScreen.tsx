@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { hasFeatureAccessWithTrial } from '@/utils/subscriptionManager';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { availableHabits, motivationalQuotes } from '@/data/habits';
-import { User, DailyProgress } from '@/types';
+import { DailyProgress } from '@/types';
+import { User } from '@/types/auth';
 import { Check, Menu, Calendar, TrendingUp } from 'lucide-react';
 
 interface HomeScreenProps {
@@ -15,19 +17,18 @@ interface HomeScreenProps {
 
 const HomeScreen = ({ user, dailyProgress, onHabitToggle, onNavigate }: HomeScreenProps) => {
   const [currentQuote, setCurrentQuote] = useState('');
-  
+
   const today = new Date().toISOString().split('T')[0];
-  const todayProgress = dailyProgress.find(p => p.date === today) || { 
-    date: today, 
-    completedHabits: [] 
+  const todayProgress = dailyProgress.find(p => p.date === today) || {
+    date: today,
+    completedHabits: []
   };
 
-  const userHabits = availableHabits.filter(habit => 
-    user.selectedHabits.includes(habit.id)
-  );
+  // استخدم العادات المخصصة فقط
+  const sortedHabits = (user.habitGoals || []).slice().sort((a, b) => a.priority - b.priority);
 
-  const completionRate = Math.round(
-    (todayProgress.completedHabits.length / userHabits.length) * 100
+  const completionRate = sortedHabits.length === 0 ? 0 : Math.round(
+    (todayProgress.completedHabits.length / sortedHabits.length) * 100
   );
 
   useEffect(() => {
@@ -57,7 +58,7 @@ const HomeScreen = ({ user, dailyProgress, onHabitToggle, onNavigate }: HomeScre
           >
             <Menu className="w-6 h-6" />
           </Button>
-          
+
           <div className="flex space-x-2 space-x-reverse">
             <Button
               variant="ghost"
@@ -86,7 +87,7 @@ const HomeScreen = ({ user, dailyProgress, onHabitToggle, onNavigate }: HomeScre
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => onNavigate('statistics')}
+              onClick={() => onNavigate('analytics')}
               className="text-white hover:bg-white/20"
             >
               <TrendingUp className="w-5 h-5" />
@@ -98,7 +99,7 @@ const HomeScreen = ({ user, dailyProgress, onHabitToggle, onNavigate }: HomeScre
           <h1 className="text-2xl font-bold">
             {getGreeting()}، {user.name}!
           </h1>
-          
+
           {/* دائرة التقدم */}
           <div className="relative w-32 h-32 mx-auto">
             <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 120 120">
@@ -131,7 +132,7 @@ const HomeScreen = ({ user, dailyProgress, onHabitToggle, onNavigate }: HomeScre
           </div>
 
           <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
-            {todayProgress.completedHabits.length} من {userHabits.length} عادات
+            {todayProgress.completedHabits.length} من {sortedHabits.length} عادات
           </Badge>
         </div>
       </div>
@@ -148,63 +149,77 @@ const HomeScreen = ({ user, dailyProgress, onHabitToggle, onNavigate }: HomeScre
           </CardContent>
         </Card>
 
-        {/* العادات اليومية */}
+        {/* العادات اليومية المخصصة */}
         <Card className="shadow-card">
           <CardHeader>
             <CardTitle className="flex items-center">
               <span className="text-2xl ml-2">📋</span>
               عاداتك اليوم
+              <Button
+                variant="ghost"
+                size="sm"
+                className="ml-2 text-primary underline text-xs"
+                onClick={() => onNavigate('settings')}
+              >
+                إدارة العادات
+              </Button>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {userHabits.map((habit, index) => {
-              const isCompleted = todayProgress.completedHabits.includes(habit.id);
-              
-              return (
-                <div key={habit.id} className="relative">
-                  {/* خط الربط للتايم لاين */}
-                  {index < userHabits.length - 1 && (
-                    <div className="absolute right-6 top-12 w-0.5 h-6 bg-border"></div>
-                  )}
-                  
-                  <Button
-                    variant="outline"
-                    onClick={() => onHabitToggle(habit.id)}
-                    className={`w-full h-auto p-4 justify-start transition-bounce ${
-                      isCompleted 
-                        ? 'bg-success-light border-success text-success-foreground' 
-                        : 'hover:bg-secondary'
-                    }`}
-                  >
-                    <div className="flex items-center w-full">
-                      {/* أيقونة الحالة */}
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ml-3 ${
-                        isCompleted ? 'bg-success' : 'bg-border'
-                      }`}>
-                        {isCompleted ? (
-                          <Check className="w-4 h-4 text-white" />
-                        ) : (
-                          <span className="w-3 h-3 bg-white rounded-full"></span>
-                        )}
-                      </div>
-                      
-                      {/* محتوى العادة */}
-                      <div className="flex-1 text-right">
-                        <div className="flex items-center justify-between">
-                          <span className="text-2xl">{habit.icon}</span>
-                          <div>
-                            <div className={`font-medium ${isCompleted ? 'line-through opacity-70' : ''}`}>
-                              {habit.name}
+            {sortedHabits.length === 0 ? (
+              <div className="text-center text-gray-500 py-10">
+                <div className="text-3xl mb-2">✨</div>
+                <p>لم تقم بإضافة أي عادات بعد.</p>
+                <p className="mt-2 text-xs">يمكنك إضافة عادات جديدة من شاشة الإعدادات.</p>
+              </div>
+            ) : (
+              sortedHabits.map((habit, index) => {
+                const isCompleted = todayProgress.completedHabits.includes(habit.habitId);
+                return (
+                  <div key={habit.habitId} className="relative">
+                    {/* خط الربط للتايم لاين */}
+                    {index < sortedHabits.length - 1 && (
+                      <div className="absolute right-6 top-12 w-0.5 h-6 bg-border"></div>
+                    )}
+                    <Button
+                      variant="outline"
+                      onClick={() => onHabitToggle(habit.habitId)}
+                      className={`w-full h-auto p-4 justify-start transition-bounce ${isCompleted
+                          ? 'bg-success-light border-success text-success-foreground'
+                          : 'hover:bg-secondary'
+                        }`}
+                    >
+                      <div className="flex items-center w-full">
+                        {/* أيقونة الحالة */}
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ml-3 ${isCompleted ? 'bg-success' : 'bg-border'
+                          }`}>
+                          {isCompleted ? (
+                            <Check className="w-4 h-4 text-white" />
+                          ) : (
+                            <span className="w-3 h-3 bg-white rounded-full"></span>
+                          )}
+                        </div>
+                        {/* محتوى العادة */}
+                        <div className="flex-1 text-right">
+                          <div className="flex items-center justify-between">
+                            <span className="text-lg font-bold">{habit.name}</span>
+                            <div>
+                              <div className={`font-medium ${isCompleted ? 'line-through opacity-70' : ''}`}>{habit.goal}</div>
+                              {habit.details && <div className="text-xs opacity-70">{habit.details}</div>}
                             </div>
-                            <div className="text-sm opacity-70">{habit.description}</div>
+                          </div>
+                          <div className="flex items-center space-x-2 space-x-reverse mt-1">
+                            <span className={`px-2 py-1 rounded text-xs font-semibold ${habit.priority === 1 ? 'bg-red-100 text-red-800' : habit.priority === 2 ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>{habit.priority === 1 ? 'عالي' : habit.priority === 2 ? 'متوسط' : 'منخفض'}</span>
+                            <span className="text-xs text-gray-500">{habit.type}</span>
+                            {habit.endDate && <span className="text-xs text-gray-500">حتى: {new Date(habit.endDate).toLocaleDateString('ar')}</span>}
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </Button>
-                </div>
-              );
-            })}
+                    </Button>
+                  </div>
+                );
+              })
+            )}
           </CardContent>
         </Card>
 
@@ -228,10 +243,17 @@ const HomeScreen = ({ user, dailyProgress, onHabitToggle, onNavigate }: HomeScre
               <h3 className="text-xl font-bold text-gray-800 mb-2">الميزات المتقدمة</h3>
               <p className="text-gray-600 text-sm">اكتشف إمكانيات جديدة لتطوير عاداتك</p>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-3">
-              <div 
-                onClick={() => onNavigate('analytics')}
+              <div
+                onClick={() => {
+                  const { access } = hasFeatureAccessWithTrial('analytics');
+                  if (access) {
+                    onNavigate('analytics');
+                  } else {
+                    onNavigate('premiumWarning_analytics');
+                  }
+                }}
                 className="group cursor-pointer bg-white rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-purple-100"
               >
                 <div className="text-center space-y-3">
@@ -247,9 +269,16 @@ const HomeScreen = ({ user, dailyProgress, onHabitToggle, onNavigate }: HomeScre
                   </div>
                 </div>
               </div>
-              
-              <div 
-                onClick={() => onNavigate('social')}
+
+              <div
+                onClick={() => {
+                  const { access } = hasFeatureAccessWithTrial('social');
+                  if (access) {
+                    onNavigate('social');
+                  } else {
+                    onNavigate('premiumWarning_social');
+                  }
+                }}
                 className="group cursor-pointer bg-white rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-pink-100"
               >
                 <div className="text-center space-y-3">
@@ -265,9 +294,16 @@ const HomeScreen = ({ user, dailyProgress, onHabitToggle, onNavigate }: HomeScre
                   </div>
                 </div>
               </div>
-              
-              <div 
-                onClick={() => onNavigate('ai_assistant')}
+
+              <div
+                onClick={() => {
+                  const { access } = hasFeatureAccessWithTrial('ai_assistant');
+                  if (access) {
+                    onNavigate('ai_assistant');
+                  } else {
+                    onNavigate('premiumWarning_ai_assistant');
+                  }
+                }}
                 className="group cursor-pointer bg-white rounded-2xl p-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-blue-100"
               >
                 <div className="text-center space-y-2">
@@ -283,9 +319,16 @@ const HomeScreen = ({ user, dailyProgress, onHabitToggle, onNavigate }: HomeScre
                   </div>
                 </div>
               </div>
-              
-              <div 
-                onClick={() => onNavigate('spiritual')}
+
+              <div
+                onClick={() => {
+                  const { access } = hasFeatureAccessWithTrial('spiritual');
+                  if (access) {
+                    onNavigate('spiritual');
+                  } else {
+                    onNavigate('premiumWarning_spiritual');
+                  }
+                }}
                 className="group cursor-pointer bg-white rounded-2xl p-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-green-100"
               >
                 <div className="text-center space-y-2">
@@ -301,8 +344,8 @@ const HomeScreen = ({ user, dailyProgress, onHabitToggle, onNavigate }: HomeScre
                   </div>
                 </div>
               </div>
-              
-              <div 
+
+              <div
                 onClick={() => onNavigate('themes')}
                 className="group cursor-pointer bg-white rounded-2xl p-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-purple-100"
               >
@@ -319,8 +362,8 @@ const HomeScreen = ({ user, dailyProgress, onHabitToggle, onNavigate }: HomeScre
                   </div>
                 </div>
               </div>
-              
-              <div 
+
+              <div
                 onClick={() => onNavigate('premium')}
                 className="group cursor-pointer bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl p-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 col-span-2"
               >

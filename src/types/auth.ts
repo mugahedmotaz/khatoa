@@ -15,6 +15,7 @@ export interface User {
   preferences: UserPreferences;
   subscription: UserSubscription;
   selectedHabits: string[];
+  habitGoals?: import("./index").HabitGoal[];
   // خصائص إضافية للتوافق مع المكونات الأخرى
   goal: string;
   startDate: string;
@@ -58,7 +59,7 @@ export interface UserSubscription {
   endDate: Date | null;
   features: string[];
   trialUsed: boolean;
-  trialEndDate: Date | null;
+  trialEndDate: string | null;
 }
 
 export interface AuthState {

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Crown, Star, Zap, Shield, Users, Brain, Heart, Check, X } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { subscriptionManager } from '@/utils/subscriptionManager';
 
 interface PremiumScreenProps {
   onBack: () => void;
@@ -127,11 +128,21 @@ const PremiumScreen = ({ onBack, onPurchase, currentPlan }: PremiumScreenProps) 
     });
 
     setTimeout(() => {
-      onPurchase(planId);
-      toast({
-        title: "تم الاشتراك بنجاح! 🎉",
-        description: "مرحباً بك في النسخة المتقدمة من خطوة",
-      });
+      // تفعيل الاشتراك في نظام إدارة الاشتراكات
+      const success = subscriptionManager.activateSubscription(planId);
+      
+      if (success) {
+        onPurchase(planId);
+        toast({
+          title: "تم الاشتراك بنجاح! 🎉",
+          description: "مرحباً بك في النسخة المتقدمة من خطوة",
+        });
+      } else {
+        toast({
+          title: "خطأ في الاشتراك",
+          description: "يرجى المحاولة مرة أخرى",
+        });
+      }
     }, 2000);
   };
 

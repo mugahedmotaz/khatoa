@@ -5,7 +5,7 @@ import ForgotPasswordScreen from './ForgotPasswordScreen';
 import { authService } from '@/utils/authService';
 
 interface AuthManagerProps {
-  onAuthSuccess: () => void;
+  onAuthSuccess: (fromRegistration?: boolean) => void;
 }
 
 type AuthScreen = 'login' | 'register' | 'forgot-password';
@@ -28,12 +28,13 @@ const AuthManager: React.FC<AuthManagerProps> = ({ onAuthSuccess }) => {
   }, [onAuthSuccess]);
 
   const handleLoginSuccess = () => {
-    onAuthSuccess();
+    onAuthSuccess(false);
   };
 
   const handleRegisterSuccess = () => {
-    onAuthSuccess();
+    setCurrentScreen('login'); // بعد التسجيل، انتقل إلى شاشة تسجيل الدخول
   };
+
 
   const handleForgotPasswordSuccess = () => {
     setCurrentScreen('login');

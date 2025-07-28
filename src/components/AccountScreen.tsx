@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { authService } from '@/utils/authService';
 import { subscriptionManager } from '@/utils/subscriptionManager';
 import { User as UserType, ChangePasswordData } from '@/types/auth';
@@ -28,15 +29,19 @@ interface AccountScreenProps {
   onBack: () => void;
   onLogout: () => void;
   onUpgrade: () => void;
+  onNavigate: (screen: string) => void;
+  onUpdateUser?: (user: UserType) => void;
 }
 
 const AccountScreen: React.FC<AccountScreenProps> = ({
   onBack,
   onLogout,
-  onUpgrade
+  onUpgrade,
+  onUpdateUser,
+  onNavigate
 }) => {
   const [user, setUser] = useState<UserType | null>(null);
-  const [activeTab, setActiveTab] = useState('profile');
+  // const [activeTab, setActiveTab] = useState('profile'); // لم نعد نحتاجها
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -93,6 +98,7 @@ const AccountScreen: React.FC<AccountScreenProps> = ({
 
       if (response.success && response.user) {
         setUser(response.user);
+        if (onUpdateUser) onUpdateUser(response.user);
         setSuccess('تم تحديث البيانات بنجاح');
         setIsEditing(false);
       } else {
@@ -525,67 +531,233 @@ const AccountScreen: React.FC<AccountScreenProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+    <div className="mobile-container bg-background min-h-screen">
       {/* الهيدر */}
-      <div className="bg-white/10 backdrop-blur-lg border-b border-white/20">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Button
-              onClick={onBack}
-              variant="ghost"
-              className="text-white hover:bg-white/10"
-            >
-              <ArrowLeft className="w-5 h-5 mr-2" />
-              العودة
-            </Button>
-            <h1 className="text-xl font-bold text-white">إدارة الحساب</h1>
-            <div className="w-20"></div>
-          </div>
+      <div className="gradient-primary text-primary-foreground p-6 rounded-b-3xl">
+        <div className="flex items-center space-x-4 space-x-reverse mb-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onBack}
+            className="text-primary-foreground hover:bg-primary-foreground/10"
+          >
+            <ArrowLeft className="w-6 h-6" />
+          </Button>
+          <h1 className="text-2xl font-bold flex-1">إدارة الحساب</h1>
+        </div>
+
+        <div className="text-center">
+          <div className="text-4xl mb-2">👤</div>
+          <p className="opacity-90">إدارة معلوماتك الشخصية</p>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* التبويبات */}
-        <div className="flex space-x-1 space-x-reverse bg-white/10 rounded-2xl p-1 mb-8">
-          {[
-            { id: 'profile', label: 'الملف الشخصي', icon: User },
-            { id: 'security', label: 'الأمان', icon: Shield },
-            { id: 'settings', label: 'الإعدادات', icon: Bell }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 flex items-center justify-center space-x-2 space-x-reverse py-3 px-4 rounded-xl transition-all duration-300 ${
-                activeTab === tab.id
-                  ? 'bg-white/20 text-white shadow-lg'
-                  : 'text-blue-200 hover:text-white hover:bg-white/10'
-              }`}
-            >
-              <tab.icon className="w-5 h-5" />
-              <span className="font-medium">{tab.label}</span>
-            </button>
-          ))}
-        </div>
-
+      <div className="p-6 space-y-6">
         {/* رسائل النجاح والخطأ */}
         {success && (
-          <div className="mb-6 bg-green-500/20 border border-green-500/30 rounded-xl p-4 text-green-200">
+          <div className="mb-4 bg-green-500/10 border border-green-500/30 rounded-xl p-4 text-green-700">
             {success}
           </div>
         )}
-        
         {error && (
-          <div className="mb-6 bg-red-500/20 border border-red-500/30 rounded-xl p-4 text-red-200">
+          <div className="mb-4 bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-red-700">
             {error}
           </div>
         )}
 
-        {/* محتوى التبويبات */}
-        <div className="bg-white/5 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border border-white/10">
-          {activeTab === 'profile' && renderProfileTab()}
-          {activeTab === 'security' && renderSecurityTab()}
-          {activeTab === 'settings' && renderSettingsTab()}
-        </div>
+        {/* معلومات الحساب */}
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <User className="w-5 h-5 ml-2" />
+              معلومات الحساب
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* صورة الملف الشخصي */}
+            <div className="flex flex-col items-center mb-4">
+              <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                {user?.avatar ? (
+                  <img src={user.avatar} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                ) : (
+                  <User className="w-10 h-10 text-white" />
+                )}
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                value={editData.name}
+                onChange={e => setEditData({ ...editData, name: e.target.value })}
+                placeholder="الاسم الكامل"
+                disabled={isLoading}
+              />
+              <Input
+                value={editData.phone}
+                onChange={e => setEditData({ ...editData, phone: e.target.value })}
+                placeholder="رقم الجوال"
+                disabled={isLoading}
+              />
+              <Input
+                value={editData.dateOfBirth}
+                onChange={e => setEditData({ ...editData, dateOfBirth: e.target.value })}
+                placeholder="تاريخ الميلاد"
+                type="date"
+                disabled={isLoading}
+              />
+              <select
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={editData.gender}
+                onChange={e => setEditData({ ...editData, gender: e.target.value })}
+                disabled={isLoading}
+              >
+                <option value="">الجنس</option>
+                <option value="male">ذكر</option>
+                <option value="female">أنثى</option>
+              </select>
+            </div>
+            
+            <Button
+              onClick={handleSaveProfile}
+              className="w-full"
+              disabled={isLoading}
+            >
+              <Save className="w-4 h-4 ml-2" />
+              حفظ التغييرات
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* تغيير كلمة المرور */}
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Shield className="w-5 h-5 ml-2" />
+              تغيير كلمة المرور
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form className="space-y-4" onSubmit={handleChangePassword}>
+              <div className="space-y-4">
+                <div className="relative">
+                  <Input
+                    type={showPasswords.current ? 'text' : 'password'}
+                    value={passwordData.currentPassword}
+                    onChange={e => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                    placeholder="كلمة المرور الحالية"
+                    disabled={isLoading}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute left-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPasswords(sp => ({ ...sp, current: !sp.current }))}
+                  >
+                    {showPasswords.current ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
+                
+                <div className="relative">
+                  <Input
+                    type={showPasswords.new ? 'text' : 'password'}
+                    value={passwordData.newPassword}
+                    onChange={e => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                    placeholder="كلمة المرور الجديدة"
+                    disabled={isLoading}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute left-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPasswords(sp => ({ ...sp, new: !sp.new }))}
+                  >
+                    {showPasswords.new ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
+                
+                <div className="relative">
+                  <Input
+                    type={showPasswords.confirm ? 'text' : 'password'}
+                    value={passwordData.confirmPassword}
+                    onChange={e => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                    placeholder="تأكيد كلمة المرور الجديدة"
+                    disabled={isLoading}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute left-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPasswords(sp => ({ ...sp, confirm: !sp.confirm }))}
+                  >
+                    {showPasswords.confirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </div>
+              
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                <Save className="w-4 h-4 ml-2" />
+                حفظ كلمة المرور
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* إعدادات الخصوصية */}
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Shield className="w-5 h-5 ml-2" />
+              إعدادات الخصوصية
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm">إظهار الملف الشخصي للكل</span>
+              <input 
+                type="checkbox" 
+                checked={user?.preferences?.privacy?.profileVisibility === 'public'} 
+                readOnly 
+                className="rounded"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm">عرض التقدم للآخرين</span>
+              <input 
+                type="checkbox" 
+                checked={user?.preferences?.privacy?.showProgress} 
+                readOnly 
+                className="rounded"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* تسجيل الخروج */}
+        <Card className="shadow-card border-destructive/20">
+          <CardHeader>
+            <CardTitle className="flex items-center text-destructive">
+              <LogOut className="w-5 h-5 ml-2" />
+              تسجيل الخروج
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-foreground/70 mb-4">
+              سيتم تسجيل خروجك من الحساب والعودة لشاشة تسجيل الدخول.
+            </p>
+            <Button
+              onClick={handleLogout}
+              disabled={isLoading}
+              variant="outline"
+              className="w-full border-destructive/40 text-destructive hover:bg-destructive/10"
+            >
+              <LogOut className="w-4 h-4 ml-2" />
+              تسجيل الخروج
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

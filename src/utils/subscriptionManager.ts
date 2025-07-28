@@ -283,37 +283,70 @@ export function getCurrentSubscriptionStatus() {
   // تحقق أولاً من الاشتراك المدفوع
   const sub = subscriptionManager.getCurrentSubscription();
   const now = new Date();
-  if (sub && sub.expiresAt) {
-    const expiresAt = new Date(sub.expiresAt);
-    const diff = Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  
+  // تحقق من انتهاء التجربة المجانية
+  const trialStart = localStorage.getItem(TRIAL_KEY);
+  const trialActive = localStorage.getItem(TRIAL_ACTIVE_KEY) === 'true';
+  const trialEnded = trialStart && !trialActive;
+  
+  if (sub && sub.expiryDate) {
+    const expiryDate = new Date(sub.expiryDate);
+    const diff = Math.ceil((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     return {
       isPremium: true,
       isTrial: false,
       daysLeft: diff > 0 ? diff : 0,
-      expiresAt,
+      expiresAt: expiryDate,
+      trialEnded: !!trialEnded,
     };
   }
+  
+  // للاشتراك مدى الحياة
+  if (sub && sub.id === 'lifetime') {
+    return {
+      isPremium: true,
+      isTrial: false,
+      daysLeft: 999999, // رقم كبير للدلالة على عدم انتهاء الصلاحية
+      expiresAt: null,
+      trialEnded: !!trialEnded,
+    };
+  }
+  
   // تحقق من التجربة المجانية
-  const trialStart = localStorage.getItem(TRIAL_KEY);
-  const trialActive = localStorage.getItem(TRIAL_ACTIVE_KEY) === 'true';
   if (trialStart && trialActive) {
     const startDate = new Date(trialStart);
     const expiresAt = new Date(startDate);
     expiresAt.setDate(startDate.getDate() + TRIAL_PERIOD_DAYS);
     const diff = Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    
+    // إذا انتهت التجربة، قم بإلغائها
+    if (diff <= 0) {
+      localStorage.setItem(TRIAL_ACTIVE_KEY, 'false');
+      return {
+        isPremium: false,
+        isTrial: false,
+        daysLeft: 0,
+        expiresAt: null,
+        trialEnded: true,
+      };
+    }
+    
     return {
       isPremium: true,
       isTrial: true,
-      daysLeft: diff > 0 ? diff : 0,
+      daysLeft: diff,
       expiresAt,
+      trialEnded: false,
     };
   }
+  
   // لا يوجد اشتراك
   return {
     isPremium: false,
     isTrial: false,
     daysLeft: 0,
     expiresAt: null,
+    trialEnded: !!trialEnded,
   };
 }
 

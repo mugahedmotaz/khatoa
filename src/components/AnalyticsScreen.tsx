@@ -76,11 +76,11 @@ const AnalyticsScreen = ({ onBack, user, dailyProgress = [] }: AnalyticsScreenPr
     // حساب التقدم الأسبوعي (آخر 7 أيام)
     const last7Days = dailyProgress.slice(-7);
     const weeklyProgress = last7Days.map(day => {
-      const dayCompletion = user.selectedHabits.length > 0 ? 
+      const dayCompletion = user.selectedHabits.length > 0 ?
         Math.round((day.completedHabits.length / user.selectedHabits.length) * 100) : 0;
       return dayCompletion;
     });
-    
+
     // ملء الأيام المفقودة بـ 0
     while (weeklyProgress.length < 7) {
       weeklyProgress.unshift(0);
@@ -91,19 +91,19 @@ const AnalyticsScreen = ({ onBack, user, dailyProgress = [] }: AnalyticsScreenPr
       const habitName = getHabitName(habitId);
       const completions = dailyProgress.filter(day => day.completedHabits.includes(habitId)).length;
       const completion = totalDays > 0 ? Math.round((completions / totalDays) * 100) : 0;
-      
+
       // حساب الاتجاه (مقارنة النصف الأول بالنصف الثاني)
       const midPoint = Math.floor(totalDays / 2);
       const firstHalf = dailyProgress.slice(0, midPoint);
       const secondHalf = dailyProgress.slice(midPoint);
-      
+
       const firstHalfCompletion = firstHalf.filter(day => day.completedHabits.includes(habitId)).length;
       const secondHalfCompletion = secondHalf.filter(day => day.completedHabits.includes(habitId)).length;
-      
+
       let trend: 'up' | 'down' | 'stable' = 'stable';
       if (secondHalfCompletion > firstHalfCompletion) trend = 'up';
       else if (secondHalfCompletion < firstHalfCompletion) trend = 'down';
-      
+
       return { name: habitName, completion, trend };
     });
 
@@ -121,7 +121,7 @@ const AnalyticsScreen = ({ onBack, user, dailyProgress = [] }: AnalyticsScreenPr
       bestTimeOfDay,
       mostProductiveDay,
     };
-    
+
     setAnalyticsData(realData);
   };
 
@@ -211,7 +211,7 @@ const AnalyticsScreen = ({ onBack, user, dailyProgress = [] }: AnalyticsScreenPr
             متقدم
           </Badge>
         </div>
-        
+
         <div className="text-center">
           <div className="text-4xl mb-2">📊</div>
           <p className="opacity-90">رؤى عميقة حول تقدمك وعاداتك</p>
@@ -312,10 +312,9 @@ const AnalyticsScreen = ({ onBack, user, dailyProgress = [] }: AnalyticsScreenPr
                   </div>
                   <div className="flex items-center">
                     <span className="text-sm font-medium ml-2">{habit.completion}%</span>
-                    <div className={`w-4 h-4 ${
-                      habit.trend === 'up' ? 'text-green-500' : 
-                      habit.trend === 'down' ? 'text-red-500' : 'text-gray-500'
-                    }`}>
+                    <div className={`w-4 h-4 ${habit.trend === 'up' ? 'text-green-500' :
+                        habit.trend === 'down' ? 'text-red-500' : 'text-gray-500'
+                      }`}>
                       {habit.trend === 'up' ? '↗️' : habit.trend === 'down' ? '↘️' : '➡️'}
                     </div>
                   </div>
@@ -342,7 +341,7 @@ const AnalyticsScreen = ({ onBack, user, dailyProgress = [] }: AnalyticsScreenPr
                   <div className="text-sm text-gray-600">{analyticsData.bestTimeOfDay}</div>
                 </div>
               </div>
-              
+
               <div className="flex items-center p-3 bg-white rounded-lg">
                 <div className="text-2xl ml-3">📅</div>
                 <div>

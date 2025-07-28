@@ -222,7 +222,7 @@ const SocialScreen = ({ onBack, onUpgrade, currentUser }: SocialScreenProps) => 
             متقدم
           </Badge>
         </div>
-        
+
         <div className="text-center">
           <div className="text-4xl mb-2">👥</div>
           <p className="opacity-90">تواصل وتنافس مع المجتمع</p>
@@ -264,7 +264,7 @@ const SocialScreen = ({ onBack, onUpgrade, currentUser }: SocialScreenProps) => 
                     <div className="flex-1">
                       <CardTitle className="text-lg mb-2">{challenge.title}</CardTitle>
                       <p className="text-sm text-gray-600 mb-3">{challenge.description}</p>
-                      
+
                       <div className="flex items-center gap-2 mb-3">
                         <Badge className={getDifficultyColor(challenge.difficulty)}>
                           {getDifficultyText(challenge.difficulty)}
@@ -274,7 +274,7 @@ const SocialScreen = ({ onBack, onUpgrade, currentUser }: SocialScreenProps) => 
                     </div>
                   </div>
                 </CardHeader>
-                
+
                 <CardContent>
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div className="text-center">
@@ -288,14 +288,14 @@ const SocialScreen = ({ onBack, onUpgrade, currentUser }: SocialScreenProps) => 
                       <div className="text-xs text-gray-500">المدة</div>
                     </div>
                   </div>
-                  
+
                   <div className="bg-yellow-50 rounded-lg p-3 mb-4">
                     <div className="flex items-center">
                       <Medal className="w-4 h-4 text-yellow-500 ml-2" />
                       <span className="text-sm font-medium">المكافأة: {challenge.reward}</span>
                     </div>
                   </div>
-                  
+
                   <Button
                     onClick={() => joinChallenge(challenge.id)}
                     className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600"
@@ -339,7 +339,7 @@ const SocialScreen = ({ onBack, onUpgrade, currentUser }: SocialScreenProps) => 
                         <span className="text-2xl ml-2">{entry.avatar}</span>
                         <span className="font-semibold">{entry.name}</span>
                       </div>
-                      
+
                       <div className="flex items-center gap-4 text-sm text-gray-600">
                         <div className="flex items-center">
                           <Star className="w-4 h-4 ml-1 text-yellow-500" />
@@ -350,7 +350,7 @@ const SocialScreen = ({ onBack, onUpgrade, currentUser }: SocialScreenProps) => 
                           {entry.streak} يوم
                         </div>
                       </div>
-                      
+
                       {/* الشارات */}
                       <div className="flex gap-1 mt-2">
                         {entry.badges.map((badge, badgeIndex) => (

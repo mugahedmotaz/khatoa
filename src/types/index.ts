@@ -1,21 +1,21 @@
-export interface User {
-  name: string;
-  goal: string;
-  selectedHabits: string[];
-  startDate: string;
-  level: number;
-  totalPoints: number;
-  achievements: string[];
-  streak: number;
-  longestStreak: number;
-  reminderSettings: ReminderSettings;
-}
+// User interface moved to types/auth.ts to avoid conflicts
+import { User } from './auth';
 
 export interface ReminderSettings {
   enabled: boolean;
   times: string[];
   motivationalQuotes: boolean;
   sound: boolean;
+}
+
+export interface HabitGoal {
+  habitId: string;
+  name: string;
+  goal: string;
+  details?: string;
+  priority: number; // 1: عالي، 2: متوسط، 3: منخفض
+  endDate?: string; // ISO date
+  type: string; // "يومية" أو "مؤقتة" أو غيرها
 }
 
 export interface Habit {

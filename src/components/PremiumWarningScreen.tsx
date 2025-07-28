@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Crown, Star, Zap, Shield, Sparkles } from 'lucide-react';
+import PaymentModal from './PaymentModal';
+import { authService } from '@/utils/authService';
 
 interface PremiumWarningScreenProps {
   featureName: string;
@@ -14,15 +16,34 @@ interface PremiumWarningScreenProps {
   trialEnded?: boolean; // هل انتهت الفترة التجريبية
 }
 
-const PremiumWarningScreen = ({ 
-  featureName, 
-  featureDescription, 
-  featureIcon, 
-  onBack, 
+const PremiumWarningScreen = ({
+  featureName,
+  featureDescription,
+  featureIcon,
+  onBack,
   onUpgrade,
   onTrial,
   trialEnded
 }: PremiumWarningScreenProps) => {
+  const [showPayment, setShowPayment] = React.useState(false);
+  const [isTrial, setIsTrial] = React.useState(false);
+
+  // إغلاق شاشة التحذير بعد الدفع أو تفعيل التجربة
+  const handleSuccess = () => {
+    setShowPayment(false);
+    
+    // تحديث حالة المستخدم المحلية بعد التفعيل
+    setTimeout(() => {
+      // إعادة تحميل بيانات المستخدم للتأكد من التحديث
+      const updatedUser = authService.getCurrentUser();
+      if (updatedUser && window.location) {
+        // إعادة تحديث الصفحة أو إشعار المكون الأب بالتحديث
+        window.dispatchEvent(new CustomEvent('userUpdated', { detail: updatedUser }));
+      }
+      onUpgrade(); // الانتقال للميزة المطلوبة
+    }, 100);
+  };
+
   const benefits = [
     { icon: <Star className="w-5 h-5" />, text: "وصول كامل لجميع الميزات المتقدمة" },
     { icon: <Zap className="w-5 h-5" />, text: "تحليلات ذكية وتقارير مفصلة" },
@@ -36,15 +57,15 @@ const PremiumWarningScreen = ({
       <div className="relative bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-700 text-white p-6 rounded-b-3xl shadow-2xl">
         <div className="absolute inset-0 bg-black/10 rounded-b-3xl"></div>
         <div className="relative z-10">
-          <Button 
-            onClick={onBack} 
-            variant="ghost" 
+          <Button
+            onClick={onBack}
+            variant="ghost"
             size="icon"
             className="text-white hover:bg-white/20 mb-4"
           >
             <ArrowRight className="w-6 h-6" />
           </Button>
-          
+
           <div className="text-center space-y-4">
             <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto backdrop-blur-sm">
               <Crown className="w-10 h-10 text-yellow-300" />
@@ -117,17 +138,32 @@ const PremiumWarningScreen = ({
         {/* Action Buttons */}
         <div className="space-y-3">
           <Button
-            onClick={onUpgrade}
+            onClick={() => {
+              setIsTrial(false);
+              setShowPayment(true);
+            }}
             className="w-full h-14 bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 hover:from-yellow-500 hover:via-orange-600 hover:to-pink-600 text-white font-bold text-lg shadow-2xl transform hover:scale-105 transition-all duration-200"
           >
             <Crown className="w-6 h-6 mr-3" />
             ترقية للنسخة المتقدمة
           </Button>
+          {/* نافذة الدفع */}
+          <PaymentModal
+            open={showPayment}
+            amount={29}
+            onSuccess={handleSuccess}
+            onCancel={() => setShowPayment(false)}
+            featureName={featureName}
+            trial={isTrial}
+          />
 
           {/* زر التجربة المجانية */}
           {onTrial && !trialEnded && (
             <Button
-              onClick={onTrial}
+              onClick={() => {
+                setIsTrial(true);
+                setShowPayment(true);
+              }}
               variant="outline"
               className="w-full h-12 border-2 border-blue-400 text-blue-700 font-bold bg-white/80 hover:bg-blue-50 mt-1"
             >
