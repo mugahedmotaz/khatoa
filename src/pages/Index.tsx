@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { AppState, User, DailyProgress } from '@/types';
+import { DailyProgress } from '@/types';
+import { User } from '@/types/auth';
 import { availableHabits } from '@/data/habits';
+import { authService } from '@/utils/authService';
 
 // مكونات التطبيق
 import SplashScreen from '@/components/SplashScreen';
+import AuthManager from '@/components/AuthManager';
 import OnboardingScreen from '@/components/OnboardingScreen';
-import CreateProfile from '@/components/CreateProfile';
-import SelectHabits from '@/components/SelectHabits';
 import HomeScreen from '@/components/HomeScreen';
 import JournalScreen from '@/components/JournalScreen';
 import StatisticsScreen from '@/components/StatisticsScreen';
@@ -22,54 +23,72 @@ import PremiumScreen from '@/components/PremiumScreen';
 import PremiumWarningScreen from '@/components/PremiumWarningScreen';
 import SpiritualScreen from '@/components/SpiritualScreen';
 import ThemesScreen from '@/components/ThemesScreen';
-import { hasFeatureAccessWithTrial, getUpgradeMessage, PREMIUM_FEATURES } from '@/utils/subscriptionManager';
+import AccountScreen from '@/components/AccountScreen';
+import { hasFeatureAccessWithTrial, getUpgradeMessage, PREMIUM_FEATURES, checkFeatureAccess } from '@/utils/subscriptionManager';
 
 const Index = () => {
   const [currentScreen, setCurrentScreen] = useState('splash');
-  const [user, setUser] = useLocalStorage<User | null>('mujahidah-user', null);
-  const [isOnboarded, setIsOnboarded] = useLocalStorage('mujahidah-onboarded', false);
-  const [dailyProgress, setDailyProgress] = useLocalStorage<DailyProgress[]>('mujahidah-progress', []);
+  const [user, setUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isOnboarded, setIsOnboarded] = useLocalStorage('khatoa-onboarded', false);
+  const [dailyProgress, setDailyProgress] = useLocalStorage<DailyProgress[]>('khatoa-progress', []);
+
+  // تحميل بيانات المستخدم عند بدء التطبيق
+  useEffect(() => {
+    const currentUser = authService.getCurrentUser();
+    if (currentUser) {
+      setUser(currentUser);
+      setIsAuthenticated(true);
+    }
+  }, []);
 
   // التحكم في الشاشات
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (!isOnboarded) {
+      if (!isAuthenticated) {
+        setCurrentScreen('auth');
+      } else if (!isOnboarded) {
         setCurrentScreen('onboarding');
-      } else if (!user) {
-        setCurrentScreen('create-profile');
-      } else if (user.selectedHabits.length === 0) {
-        setCurrentScreen('select-habits');
       } else {
         setCurrentScreen('home');
       }
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, [isOnboarded, user]);
+  }, [isAuthenticated, isOnboarded]);
+
+  // معالج نجاح المصادقة
+  const handleAuthSuccess = () => {
+    const currentUser = authService.getCurrentUser();
+    if (currentUser) {
+      setUser(currentUser);
+      setIsAuthenticated(true);
+      if (!isOnboarded) {
+        setCurrentScreen('onboarding');
+      } else {
+        setCurrentScreen('home');
+      }
+    }
+  };
+
+  // معالج تسجيل الخروج
+  const handleLogout = async () => {
+    await authService.logout();
+    setUser(null);
+    setIsAuthenticated(false);
+    setCurrentScreen('auth');
+  };
 
   // إكمال التأهيل
   const handleOnboardingComplete = () => {
     setIsOnboarded(true);
-    setCurrentScreen('create-profile');
-  };
-
-  // إنشاء الملف الشخصي
-  const handleCreateProfile = (newUser: User) => {
-    setUser(newUser);
-    setCurrentScreen('select-habits');
-  };
-
-  // اختيار العادات
-  const handleSelectHabits = (selectedHabits: string[]) => {
-    if (user) {
-      const updatedUser = { ...user, selectedHabits };
-      setUser(updatedUser);
-      setCurrentScreen('home');
-    }
+    setCurrentScreen('home');
   };
 
   // تبديل حالة العادة
   const handleHabitToggle = (habitId: string) => {
+    if (!user) return;
+    
     const today = new Date().toISOString().split('T')[0];
     const habitData = availableHabits.find(h => h.id === habitId);
     const points = habitData?.points || 0;
@@ -78,7 +97,6 @@ const Index = () => {
       const existingDay = prev.find(p => p.date === today);
       
       if (existingDay) {
-        // تحديث اليوم الموجود
         const isCompleting = !existingDay.completedHabits.includes(habitId);
         const newCompletedHabits = isCompleting
           ? [...existingDay.completedHabits, habitId]
@@ -95,167 +113,133 @@ const Index = () => {
             : p
         );
       } else {
-        // إضافة يوم جديد
-        return [
-          ...prev,
-          {
-            date: today,
-            completedHabits: [habitId],
-            pointsEarned: points
-          }
-        ];
-      }
-    });
-
-    // تحديث نقاط المستخدم
-    if (user) {
-      const today = new Date().toISOString().split('T')[0];
-      const todayProgress = dailyProgress.find(p => p.date === today) || { completedHabits: [], pointsEarned: 0, date: today };
-      const isCompleting = !todayProgress.completedHabits.includes(habitId);
-      const pointsChange = isCompleting ? points : -points;
-      setUser({
-        ...user,
-        totalPoints: Math.max(0, user.totalPoints + pointsChange)
-      });
-    }
-  };
-
-  // حفظ مدخلات المفكرة
-  const handleSaveJournalEntry = (entry: string) => {
-    const today = new Date().toISOString().split('T')[0];
-    
-    setDailyProgress(prev => {
-      const existingDay = prev.find(p => p.date === today);
-      
-      if (existingDay) {
-        return prev.map(p => 
-          p.date === today 
-            ? { ...p, journalEntry: entry }
-            : p
-        );
-      } else {
-        return [
-          ...prev,
-          {
-            date: today,
-            completedHabits: [],
-            journalEntry: entry,
-            pointsEarned: 0
-          }
-        ];
+        return [...prev, {
+          date: today,
+          completedHabits: [habitId],
+          pointsEarned: points
+        }];
       }
     });
   };
 
-  // تحديث بيانات المستخدم
-  const handleUpdateUser = (updatedUser: User) => {
-    setUser(updatedUser);
-  };
-
-  // إعادة تعيين التطبيق
-  const handleResetApp = () => {
-    setUser(null);
-    setIsOnboarded(false);
-    setDailyProgress([]);
-    setCurrentScreen('splash');
-  };
-
-  // التنقل بين الشاشات
-  const handleNavigate = (screen: string) => {
-    setCurrentScreen(screen);
-  };
-
-  // الحصول على مدخل المفكرة لليوم الحالي
-  const getTodayJournalEntry = () => {
-    const today = new Date().toISOString().split('T')[0];
-    const todayProgress = dailyProgress.find(p => p.date === today);
-    return todayProgress?.journalEntry || '';
-  };
-
-  // عرض الشاشة المناسبة
+  // عرض الشاشات
   const renderScreen = () => {
     switch (currentScreen) {
       case 'splash':
         return <SplashScreen onComplete={() => {}} />;
       
+      case 'auth':
+        return <AuthManager onAuthSuccess={handleAuthSuccess} />;
+      
       case 'onboarding':
         return <OnboardingScreen onComplete={handleOnboardingComplete} />;
       
-      case 'create-profile':
-        return <CreateProfile onComplete={handleCreateProfile} />;
-      
-      case 'select-habits':
-        return <SelectHabits onComplete={handleSelectHabits} />;
-      
       case 'home':
-        return user ? (
+        return (
           <HomeScreen
             user={user}
             dailyProgress={dailyProgress}
             onHabitToggle={handleHabitToggle}
-            onNavigate={handleNavigate}
+            onNavigate={setCurrentScreen}
           />
-        ) : null;
+        );
       
       case 'journal':
         return (
-          <JournalScreen
+          <JournalScreen 
             onBack={() => setCurrentScreen('home')}
-            onSaveEntry={handleSaveJournalEntry}
-            currentEntry={getTodayJournalEntry()}
+            onSaveEntry={(entry) => {
+              const today = new Date().toISOString().split('T')[0];
+              setDailyProgress(prev => {
+                const existingDay = prev.find(p => p.date === today);
+                if (existingDay) {
+                  return prev.map(p => 
+                    p.date === today 
+                      ? { ...p, journalEntry: entry }
+                      : p
+                  );
+                } else {
+                  return [...prev, {
+                    date: today,
+                    completedHabits: [],
+                    journalEntry: entry,
+                    pointsEarned: 0
+                  }];
+                }
+              });
+            }}
+            currentEntry={() => {
+              const today = new Date().toISOString().split('T')[0];
+              const todayProgress = dailyProgress.find(p => p.date === today);
+              return todayProgress?.journalEntry || '';
+            }()}
           />
         );
       
       case 'statistics':
-        return user ? (
+        return (
           <StatisticsScreen
             user={user}
             dailyProgress={dailyProgress}
             onBack={() => setCurrentScreen('home')}
           />
-        ) : null;
+        );
+      
+      case 'settings':
+        return (
+          <SettingsScreen
+            user={user}
+            onBack={() => setCurrentScreen('home')}
+            onUpdateUser={(updatedUser) => {
+              setUser(updatedUser);
+              authService.updateUser(updatedUser);
+            }}
+            onLogout={handleLogout}
+          />
+        );
+      
+      case 'account':
+        return (
+          <AccountScreen
+            onBack={() => setCurrentScreen('home')}
+            onLogout={handleLogout}
+            onUpgrade={() => setCurrentScreen('premium')}
+          />
+        );
       
       case 'achievements':
-        return user ? (
+        return (
           <AchievementsScreen
             user={user}
             dailyProgress={dailyProgress}
             onBack={() => setCurrentScreen('home')}
           />
-        ) : null;
+        );
       
       case 'reminders':
-        return user ? (
-          <RemindersScreen
+        return (
+          <RemindersScreen 
             user={user}
             onBack={() => setCurrentScreen('home')}
-            onUpdateReminders={(settings) => setUser({...user, reminderSettings: settings})}
-          />
-        ) : null;
-      
-      case 'meditation':
-        return (
-          <MeditationScreen
-            onBack={() => setCurrentScreen('home')}
+            onUpdateReminders={(settings) => {
+              if (user) {
+                const updatedUser = { ...user, reminderSettings: settings };
+                setUser(updatedUser);
+                authService.updateUser(updatedUser);
+              }
+            }}
           />
         );
       
-      case 'settings':
-        return user ? (
-          <SettingsScreen
-            user={user}
-            onBack={() => setCurrentScreen('home')}
-            onUpdateUser={handleUpdateUser}
-            onResetApp={handleResetApp}
-          />
-        ) : null;
+      case 'meditation':
+        return <MeditationScreen onBack={() => setCurrentScreen('home')} />;
       
       case 'analytics':
         return checkFeatureAccess('analytics') ? (
-          <AnalyticsScreen 
-            onBack={() => setCurrentScreen('home')} 
+          <AnalyticsScreen
             user={user}
             dailyProgress={dailyProgress}
+            onBack={() => setCurrentScreen('home')}
           />
         ) : (
           <PremiumWarningScreen
@@ -266,10 +250,11 @@ const Index = () => {
             onUpgrade={() => setCurrentScreen('premium')}
           />
         );
+      
       case 'social':
         return checkFeatureAccess('social') ? (
           <SocialScreen 
-            onBack={() => setCurrentScreen('home')} 
+            onBack={() => setCurrentScreen('home')}
             onUpgrade={() => setCurrentScreen('premium')}
             currentUser={user}
           />
@@ -282,10 +267,11 @@ const Index = () => {
             onUpgrade={() => setCurrentScreen('premium')}
           />
         );
+      
       case 'ai_assistant':
         return checkFeatureAccess('ai_assistant') ? (
           <AIAssistantScreen 
-            onBack={() => setCurrentScreen('home')} 
+            onBack={() => setCurrentScreen('home')}
             onUpgrade={() => setCurrentScreen('premium')}
             userHabits={user?.selectedHabits || []}
             userProgress={dailyProgress}
@@ -299,6 +285,7 @@ const Index = () => {
             onUpgrade={() => setCurrentScreen('premium')}
           />
         );
+      
       case 'spiritual':
         return checkFeatureAccess('spiritual') ? (
           <SpiritualScreen onBack={() => setCurrentScreen('home')} />
@@ -311,6 +298,7 @@ const Index = () => {
             onUpgrade={() => setCurrentScreen('premium')}
           />
         );
+      
       case 'themes':
         return checkFeatureAccess('themes') ? (
           <ThemesScreen onBack={() => setCurrentScreen('home')} />
@@ -323,16 +311,19 @@ const Index = () => {
             onUpgrade={() => setCurrentScreen('premium')}
           />
         );
+      
       case 'premium':
-        return <PremiumScreen 
-          onBack={() => setCurrentScreen('home')} 
-          onPurchase={(planId) => {
-            // محاكاة عملية الشراء
-            console.log('Purchasing plan:', planId);
-            setCurrentScreen('home');
-          }}
-          currentPlan={null}
-        />;
+        return (
+          <PremiumScreen 
+            onBack={() => setCurrentScreen('home')} 
+            onPurchase={(planId) => {
+              console.log('Purchasing plan:', planId);
+              setCurrentScreen('home');
+            }}
+            currentPlan={user?.subscription.planId || null}
+          />
+        );
+      
       default:
         return <SplashScreen onComplete={() => {}} />;
     }
