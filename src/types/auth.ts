@@ -15,6 +15,22 @@ export interface User {
   preferences: UserPreferences;
   subscription: UserSubscription;
   selectedHabits: string[];
+  // خصائص إضافية للتوافق مع المكونات الأخرى
+  goal: string;
+  startDate: string;
+  level: number;
+  totalPoints: number;
+  achievements: string[];
+  streak: number;
+  longestStreak: number;
+  reminderSettings: ReminderSettings;
+}
+
+export interface ReminderSettings {
+  enabled: boolean;
+  times: string[];
+  motivationalQuotes: boolean;
+  sound: boolean;
 }
 
 export interface UserPreferences {
