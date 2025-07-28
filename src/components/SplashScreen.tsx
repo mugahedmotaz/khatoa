@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Crown, Zap } from 'lucide-react';
 import logoImage from '@/assets/logo.png';
+import { getCurrentSubscriptionStatus } from '@/utils/subscriptionManager';
 
 interface SplashScreenProps {
   onComplete: () => void;
@@ -9,6 +12,9 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
   const [progress, setProgress] = useState(0);
   const [showContent, setShowContent] = useState(false);
   const [currentQuote, setCurrentQuote] = useState(0);
+
+  // حالة الاشتراك
+  const subscriptionStatus = getCurrentSubscriptionStatus();
 
   const inspirationalQuotes = [
     "كل يوم خطوة... كل يوم مجاهدة",

@@ -15,6 +15,14 @@ import SettingsScreen from '@/components/SettingsScreen';
 import AchievementsScreen from '@/components/AchievementsScreen';
 import RemindersScreen from '@/components/RemindersScreen';
 import MeditationScreen from '@/components/MeditationScreen';
+import AnalyticsScreen from '@/components/AnalyticsScreen';
+import AIAssistantScreen from '@/components/AIAssistantScreen';
+import SocialScreen from '@/components/SocialScreen';
+import PremiumScreen from '@/components/PremiumScreen';
+import PremiumWarningScreen from '@/components/PremiumWarningScreen';
+import SpiritualScreen from '@/components/SpiritualScreen';
+import ThemesScreen from '@/components/ThemesScreen';
+import { hasFeatureAccessWithTrial, getUpgradeMessage, PREMIUM_FEATURES } from '@/utils/subscriptionManager';
 
 const Index = () => {
   const [currentScreen, setCurrentScreen] = useState('splash');
@@ -242,6 +250,89 @@ const Index = () => {
           />
         ) : null;
       
+      case 'analytics':
+        return checkFeatureAccess('analytics') ? (
+          <AnalyticsScreen 
+            onBack={() => setCurrentScreen('home')} 
+            user={user}
+            dailyProgress={dailyProgress}
+          />
+        ) : (
+          <PremiumWarningScreen
+            featureName={PREMIUM_FEATURES.analytics.name}
+            featureDescription={PREMIUM_FEATURES.analytics.description}
+            featureIcon="📊"
+            onBack={() => setCurrentScreen('home')}
+            onUpgrade={() => setCurrentScreen('premium')}
+          />
+        );
+      case 'social':
+        return checkFeatureAccess('social') ? (
+          <SocialScreen 
+            onBack={() => setCurrentScreen('home')} 
+            onUpgrade={() => setCurrentScreen('premium')}
+            currentUser={user}
+          />
+        ) : (
+          <PremiumWarningScreen
+            featureName={PREMIUM_FEATURES.social.name}
+            featureDescription={PREMIUM_FEATURES.social.description}
+            featureIcon="👥"
+            onBack={() => setCurrentScreen('home')}
+            onUpgrade={() => setCurrentScreen('premium')}
+          />
+        );
+      case 'ai_assistant':
+        return checkFeatureAccess('ai_assistant') ? (
+          <AIAssistantScreen 
+            onBack={() => setCurrentScreen('home')} 
+            onUpgrade={() => setCurrentScreen('premium')}
+            userHabits={user?.selectedHabits || []}
+            userProgress={dailyProgress}
+          />
+        ) : (
+          <PremiumWarningScreen
+            featureName={PREMIUM_FEATURES.ai_assistant.name}
+            featureDescription={PREMIUM_FEATURES.ai_assistant.description}
+            featureIcon="🤖"
+            onBack={() => setCurrentScreen('home')}
+            onUpgrade={() => setCurrentScreen('premium')}
+          />
+        );
+      case 'spiritual':
+        return checkFeatureAccess('spiritual') ? (
+          <SpiritualScreen onBack={() => setCurrentScreen('home')} />
+        ) : (
+          <PremiumWarningScreen
+            featureName={PREMIUM_FEATURES.spiritual.name}
+            featureDescription={PREMIUM_FEATURES.spiritual.description}
+            featureIcon="🕌"
+            onBack={() => setCurrentScreen('home')}
+            onUpgrade={() => setCurrentScreen('premium')}
+          />
+        );
+      case 'themes':
+        return checkFeatureAccess('themes') ? (
+          <ThemesScreen onBack={() => setCurrentScreen('home')} />
+        ) : (
+          <PremiumWarningScreen
+            featureName={PREMIUM_FEATURES.themes.name}
+            featureDescription={PREMIUM_FEATURES.themes.description}
+            featureIcon="🎨"
+            onBack={() => setCurrentScreen('home')}
+            onUpgrade={() => setCurrentScreen('premium')}
+          />
+        );
+      case 'premium':
+        return <PremiumScreen 
+          onBack={() => setCurrentScreen('home')} 
+          onPurchase={(planId) => {
+            // محاكاة عملية الشراء
+            console.log('Purchasing plan:', planId);
+            setCurrentScreen('home');
+          }}
+          currentPlan={null}
+        />;
       default:
         return <SplashScreen onComplete={() => {}} />;
     }

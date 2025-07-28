@@ -217,6 +217,129 @@ const HomeScreen = ({ user, dailyProgress, onHabitToggle, onNavigate }: HomeScre
           <span className="text-2xl ml-3">📔</span>
           اكتب في مفكرتك اليومية
         </Button>
+
+        {/* قسم الميزات المتقدمة */}
+        <Card className="shadow-xl border-0 bg-gradient-to-r from-purple-50 to-blue-50">
+          <CardContent className="p-6">
+            <div className="text-center mb-6">
+              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                <span className="text-2xl">✨</span>
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">الميزات المتقدمة</h3>
+              <p className="text-gray-600 text-sm">اكتشف إمكانيات جديدة لتطوير عاداتك</p>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <div 
+                onClick={() => onNavigate('analytics')}
+                className="group cursor-pointer bg-white rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-purple-100"
+              >
+                <div className="text-center space-y-3">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-xl flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                    <span className="text-2xl">📊</span>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-800 text-sm">التحليلات الذكية</h4>
+                    <p className="text-xs text-gray-500 mt-1">تقارير مفصلة</p>
+                  </div>
+                  <div className="w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center mx-auto">
+                    <span className="text-xs">👑</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div 
+                onClick={() => onNavigate('social')}
+                className="group cursor-pointer bg-white rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-pink-100"
+              >
+                <div className="text-center space-y-3">
+                  <div className="w-12 h-12 bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                    <span className="text-2xl">👥</span>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-800 text-sm">التحديات الجماعية</h4>
+                    <p className="text-xs text-gray-500 mt-1">تنافس مع الأصدقاء</p>
+                  </div>
+                  <div className="w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center mx-auto">
+                    <span className="text-xs">👑</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div 
+                onClick={() => onNavigate('ai_assistant')}
+                className="group cursor-pointer bg-white rounded-2xl p-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-blue-100"
+              >
+                <div className="text-center space-y-2">
+                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                    <span className="text-lg">🤖</span>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-800 text-xs">المساعد الذكي</h4>
+                    <p className="text-xs text-gray-500 mt-1">نصائح مخصصة</p>
+                  </div>
+                  <div className="w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center mx-auto">
+                    <span className="text-xs">👑</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div 
+                onClick={() => onNavigate('spiritual')}
+                className="group cursor-pointer bg-white rounded-2xl p-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-green-100"
+              >
+                <div className="text-center space-y-2">
+                  <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-teal-500 rounded-xl flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                    <span className="text-lg">🕌</span>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-800 text-xs">الميزات الروحانية</h4>
+                    <p className="text-xs text-gray-500 mt-1">أوقات الصلاة</p>
+                  </div>
+                  <div className="w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center mx-auto">
+                    <span className="text-xs">👑</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div 
+                onClick={() => onNavigate('themes')}
+                className="group cursor-pointer bg-white rounded-2xl p-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-purple-100"
+              >
+                <div className="text-center space-y-2">
+                  <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                    <span className="text-lg">🎨</span>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-800 text-xs">الثيمات المتقدمة</h4>
+                    <p className="text-xs text-gray-500 mt-1">ألوان جميلة</p>
+                  </div>
+                  <div className="w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center mx-auto">
+                    <span className="text-xs">👑</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div 
+                onClick={() => onNavigate('premium')}
+                className="group cursor-pointer bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl p-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 col-span-2"
+              >
+                <div className="text-center space-y-2">
+                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                    <span className="text-2xl">💎</span>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-white text-sm">الترقية الآن</h4>
+                    <p className="text-xs text-white/80 mt-1">جميع الميزات المتقدمة</p>
+                  </div>
+                  <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center mx-auto">
+                    <span className="text-xs">⭐</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

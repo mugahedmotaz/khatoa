@@ -3,10 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRight, User, Target, RefreshCw, Trash2, Edit } from 'lucide-react';
+import { ArrowRight, User, Target, RefreshCw, Trash2, Edit, Crown, Zap } from 'lucide-react';
 import { User as UserType } from '@/types';
 import { availableHabits } from '@/data/habits';
 import { toast } from '@/hooks/use-toast';
+import { getCurrentSubscriptionStatus } from '@/utils/subscriptionManager';
 
 interface SettingsScreenProps {
   user: UserType;
@@ -19,6 +20,9 @@ const SettingsScreen = ({ user, onBack, onUpdateUser, onResetApp }: SettingsScre
   const [isEditingName, setIsEditingName] = useState(false);
   const [newName, setNewName] = useState(user.name);
   const [selectedHabits, setSelectedHabits] = useState<string[]>(user.selectedHabits);
+
+  // حالة الاشتراك
+  const subscriptionStatus = getCurrentSubscriptionStatus();
 
   const userHabits = availableHabits.filter(habit => 
     user.selectedHabits.includes(habit.id)
@@ -82,7 +86,24 @@ const SettingsScreen = ({ user, onBack, onUpdateUser, onResetApp }: SettingsScre
           >
             <ArrowRight className="w-6 h-6" />
           </Button>
-          <h1 className="text-2xl font-bold">الإعدادات</h1>
+          <h1 className="text-2xl font-bold flex-1">الإعدادات</h1>
+          
+          {/* شارة الاشتراك */}
+          {subscriptionStatus.isPremium && (
+            <Badge className={`${
+              subscriptionStatus.isTrial 
+                ? 'bg-blue-500/20 text-blue-100 border-blue-300' 
+                : 'bg-yellow-500/20 text-yellow-100 border-yellow-300'
+            } px-3 py-1 text-xs font-bold flex items-center gap-1`}>
+              {subscriptionStatus.isTrial ? (
+                <Zap className="w-3 h-3" />
+              ) : (
+                <Crown className="w-3 h-3" />
+              )}
+              {subscriptionStatus.isTrial ? 'تجربة مجانية' : 'عضو مميز'}
+              <span>– باقي {subscriptionStatus.daysLeft} يوم</span>
+            </Badge>
+          )}
         </div>
         
         <div className="text-center">
